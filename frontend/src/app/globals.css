@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+html {
+  background-color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+html.dark {
+  background-color: #111827; /* gray-900 */
+}
+
+body {
+  background-color: inherit;
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: color 0.3s ease;
+}
+
+/* Hide Next.js development indicators */
+[data-nextjs-scroll-focus-boundary] {
+  display: contents;
+}
+
+/* Hide the compile indicator triangle */
+#__next-build-watcher {
+  display: none !important;
+}
+
+/* Hide any development overlays */
+nextjs-portal {
+  display: none !important;
+}
+
+/* Additional hiding for development indicators */
+.__next-dev-overlay {
+  display: none !important;
+}
+
+/* Hide the build activity indicator */
+[id^="__next-dev"] {
+  display: none !important;
+}
+
+/* Force hide any Next.js development UI */
+.__next-dev-hide {
+  display: none !important;
+}
