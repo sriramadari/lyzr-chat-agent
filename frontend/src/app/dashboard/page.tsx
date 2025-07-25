@@ -22,9 +22,17 @@ interface Agent {
   name: string;
   description: string;
   isActive: boolean;
+  domains: string[];
+  lyzrConfig: {
+    agentId: string;
+    apiEndpoint: string;
+    apiKey: string;
+  };
   analytics: {
     totalChats: number;
     totalMessages: number;
+    pageViews?: number;
+    lastUsed?: string;
   };
   widget: {
     theme: 'light' | 'dark';
@@ -34,6 +42,16 @@ interface Agent {
     placeholder: string;
     title: string;
   };
+  optimization?: {
+    enableAutoLearning: boolean;
+    confidenceThreshold: number;
+    responseTimeTarget: number;
+    categories: string[];
+    keywords: string[];
+    fallbackMessage: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function DashboardPage() {
@@ -48,11 +66,23 @@ export default function DashboardPage() {
       setLoading(true);
       const response = await api.get('/agents');
       if (response.data.success) {
-        setAgents(response.data.data);
+        // Handle the nested structure: data.agents
+        const agentsArray = response.data.data?.agents || response.data.data;
+        if (Array.isArray(agentsArray)) {
+          setAgents(agentsArray);
+        } else {
+          setAgents([]);
+          console.warn('API response does not contain valid agents array:', response.data);
+        }
+      } else {
+        setAgents([]);
+        console.warn('API response not successful:', response.data);
       }
     } catch (error) {
       console.error('Error fetching agents:', error);
       toast.error('Failed to fetch agents');
+      // Ensure agents is set to empty array on error
+      setAgents([]);
     } finally {
       setLoading(false);
       setIsInitialized(true);
@@ -116,7 +146,7 @@ export default function DashboardPage() {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total Agents</dt>
-                    <dd className="text-lg font-medium text-gray-900">{agents?.length || 0}</dd>
+                    <dd className="text-lg font-medium text-gray-900">{Array.isArray(agents) ? agents.length : 0}</dd>
                   </dl>
                 </div>
               </div>
@@ -133,7 +163,7 @@ export default function DashboardPage() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total Chats</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {agents?.reduce((sum, agent) => sum + (agent.analytics?.totalChats || 0), 0) || 0}
+                      {Array.isArray(agents) ? agents.reduce((sum, agent) => sum + (agent.analytics?.totalChats || 0), 0) : 0}
                     </dd>
                   </dl>
                 </div>
@@ -151,7 +181,7 @@ export default function DashboardPage() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Active Agents</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {agents?.filter(agent => agent.isActive).length || 0}
+                      {Array.isArray(agents) ? agents.filter(agent => agent.isActive).length : 0}
                     </dd>
                   </dl>
                 </div>
@@ -169,7 +199,7 @@ export default function DashboardPage() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total Messages</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {agents?.reduce((sum, agent) => sum + (agent.analytics?.totalMessages || 0), 0) || 0}
+                      {Array.isArray(agents) ? agents.reduce((sum, agent) => sum + (agent.analytics?.totalMessages || 0), 0) : 0}
                     </dd>
                   </dl>
                 </div>
@@ -192,7 +222,7 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : agents?.length === 0 ? (
+          ) : !Array.isArray(agents) || agents.length === 0 ? (
             <div className="text-center py-12">
               <Bot className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No agents yet</h3>
@@ -209,7 +239,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {agents?.map((agent) => (
+              {Array.isArray(agents) && agents.map((agent) => (
                 <div key={agent._id} className="bg-white shadow rounded-lg hover:shadow-md transition-shadow">
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">

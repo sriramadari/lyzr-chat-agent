@@ -12,12 +12,15 @@ export const serveWidget = async (req: Request, res: Response) => {
     
     console.log(`🔍 Widget request for agent: ${agentId}`);
     
+    // Get the backend URL from environment or construct from request
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+    
     // Set CORS headers first for widget serving
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.setHeader('Cache-Control', 'no-cache'); // Changed to no-cache for dynamic injection
     
     // Verify agent exists and is active
     console.log(`📡 Looking up agent in database...`);
@@ -63,7 +66,7 @@ export const serveWidget = async (req: Request, res: Response) => {
     // Generate widget configuration
     const agentConfig = {
       agentId: agent._id,
-      apiUrl: process.env.API_URL || 'http://localhost:5001/api',
+      apiUrl: `${backendUrl}/api`, // Use injected backend URL
       title: agent.widget?.title || 'Support Chat',
       subtitle: 'We\'re here to help',
       welcomeMessage: agent.widget?.welcomeMessage || 'Hello! How can I help you today?',
@@ -74,14 +77,14 @@ export const serveWidget = async (req: Request, res: Response) => {
     };
     
     console.log(`📁 Looking for widget file...`);
-    // Read the widget file and inject configuration
-    const widgetPath = path.join(__dirname, '../../../widget/dist/widget.js');
+    // Read the widget file from src directory (not dist)
+    const widgetPath = path.join(__dirname, '../../../widget/src/widget.js');
     console.log(`📂 Widget path: ${widgetPath}`);
     
     if (!fs.existsSync(widgetPath)) {
       console.log(`❌ Widget file not found at: ${widgetPath}`);
       return res.status(500).send(`
-        console.error('Lyzr Widget: Widget file not found. Please build the widget first.');
+        console.error('Lyzr Widget: Widget file not found. Please check widget path.');
         // Widget failed to load - file not found
       `);
     }
@@ -89,22 +92,15 @@ export const serveWidget = async (req: Request, res: Response) => {
     console.log(`📖 Reading widget file...`);
     let widgetCode = fs.readFileSync(widgetPath, 'utf8');
     
-    // Inject agent configuration into the widget by replacing the auto-initialization
-    const configInjection = `
-// Auto-injected agent configuration
-(function() {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      window.LyzrWidget = new LyzrWidget(${JSON.stringify(agentConfig)});
-    });
-  } else {
-    window.LyzrWidget = new LyzrWidget(${JSON.stringify(agentConfig)});
-  }
-})();
+    // Inject backend URL at the top of the script
+    const backendUrlInjection = `
+// Injected Backend URL and Configuration
+window.LYZR_BACKEND_URL = '${backendUrl}';
+window.LyzrWidgetConfig = ${JSON.stringify(agentConfig)};
 `;
     
-    // Append config to widget code
-    widgetCode += configInjection;
+    // Prepend the injection to the widget code
+    widgetCode = backendUrlInjection + widgetCode;
     
     console.log(`📈 Updating analytics...`);
     // Update analytics

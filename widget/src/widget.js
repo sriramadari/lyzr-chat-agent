@@ -4,7 +4,7 @@ class LyzrWidget {
   constructor(config = {}) {
     this.config = {
       agentId: config.agentId || '',
-      apiUrl: config.apiUrl || 'http://localhost:5001/api',
+      apiUrl: config.apiUrl || this.getDefaultApiUrl(),
       theme: config.theme || 'light',
       primaryColor: config.primaryColor || '#3b82f6',
       position: config.position || 'bottom-right',
@@ -21,6 +21,28 @@ class LyzrWidget {
     this.sessionId = this.generateSessionId();
     
     this.init();
+  }
+  
+  getDefaultApiUrl() {
+    // Try to get backend URL from injected global variable
+    if (window.LYZR_BACKEND_URL) {
+      return window.LYZR_BACKEND_URL + '/api';
+    }
+    
+    // Extract from current script src if served from backend
+    const scripts = document.getElementsByTagName('script');
+    const widgetScript = Array.from(scripts).find(script => 
+      script.src && script.src.includes('widget.js')
+    );
+    
+    if (widgetScript && widgetScript.src.includes('/api/widget/')) {
+      // Extract base URL from widget script src
+      const url = new URL(widgetScript.src);
+      return `${url.protocol}//${url.host}/api`;
+    }
+    
+    // Fallback to port 8080 
+    return 'http://localhost:8080/api';
   }
   
   init() {
@@ -639,10 +661,10 @@ addMessage(text, type) {
   
   let config = {};
   
-  // Check for global config first
+  // Check for global config first (injected by backend)
   if (window.LyzrWidgetConfig) {
     config = window.LyzrWidgetConfig;
-    console.log('✅ Found global config:', config);
+    console.log('✅ Found injected global config:', config);
   } else {
     // Look for widget configuration in script tag
     const scripts = document.getElementsByTagName('script');

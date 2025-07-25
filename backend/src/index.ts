@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -12,10 +13,13 @@ import widgetRoutes from './routes/widget';
 import ticketRoutes from './routes/tickets';
 import userRoutes from './routes/users';
 
+// Import utilities
+import { getDemoHTML } from './utils/demoTemplate';
+
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(helmet({
@@ -24,8 +28,12 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: '*', // Allow all origins for widget embedding
-  credentials: false, // Don't include credentials for public widget
+  origin: [
+    'http://localhost:3000',
+    'https://lyzr-chat-agent.vercel.app',
+    '*' // Allow all origins for widget embedding
+  ],
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
   exposedHeaders: ['Content-Type'],
@@ -35,12 +43,24 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Basic route
+// Serve static files
+app.use('/static', express.static(path.join(process.cwd(), 'public')));
+app.use('/widget', express.static(path.join(process.cwd(), 'widget')));
+
+// Demo page route
+app.get('/demo.html', (req, res) => {
+  const demoHTML = getDemoHTML(req.protocol, req.get('host') || 'localhost:8080');
+  res.setHeader('Content-Type', 'text/html');
+  res.send(demoHTML);
+});
+
+// Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Lyzr Support Chat Agent is running',
-    timestamp: new Date().toISOString()
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 

@@ -28,9 +28,9 @@ export default function WidgetCodeModal({ isOpen, onClose, agent }: WidgetCodeMo
   if (!isOpen) return null;
 
   const generateWidgetCode = () => {
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://your-domain.com' 
-      : 'http://localhost:5001';
+    // Use the API URL from environment variables
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+    const baseUrl = apiUrl.replace('/api', ''); // Remove /api suffix to get base URL
     
     return `<!-- Lyzr Support Chat Widget -->
 <script 

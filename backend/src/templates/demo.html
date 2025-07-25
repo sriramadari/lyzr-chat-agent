@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyzr Support Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        .demo-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Monaco', monospace;
+            overflow-x: auto;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🚀 Lyzr Support Widget</h1>
+        <p class="subtitle">AI-Powered Customer Support - Live Demo</p>
+        
+        <div class="demo-content">
+            <h2>✨ Live Widget Demo</h2>
+            <p>The chat widget should appear in the bottom-right corner of this page. Click it to start a conversation with our AI support agent!</p>
+            
+            <div class="instructions">
+                <h3>🎯 Try These Commands:</h3>
+                <ul>
+                    <li>👋 "Hello" - Basic greeting</li>
+                    <li>❓ "What can you help me with?" - See capabilities</li>
+                    <li>🔧 "I need technical support" - Technical assistance</li>
+                    <li>📧 "How do I contact support?" - Contact information</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-content">
+            <h2>📦 How to Embed This Widget</h2>
+            <p>Add this single line of code to any website:</p>
+            
+            <div class="code-block">
+                <pre><code>&lt;script 
+  src="{{WIDGET_URL}}"
+  data-agent-id="YOUR_AGENT_ID"
+  data-title="Support Chat"
+  data-welcome-message="Hi! How can I help you today?"
+  data-primary-color="#3b82f6"
+&gt;&lt;/script&gt;</code></pre>
+            </div>
+            
+            <div class="instructions">
+                <h3>🔧 Configuration Options:</h3>
+                <ul>
+                    <li><strong>data-agent-id</strong>: Your unique agent ID</li>
+                    <li><strong>data-title</strong>: Widget header title</li>
+                    <li><strong>data-welcome-message</strong>: First message shown</li>
+                    <li><strong>data-primary-color</strong>: Widget theme color</li>
+                    <li><strong>data-position</strong>: bottom-right, bottom-left, etc.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-content">
+            <h2>🌐 Management Dashboard</h2>
+            <p>Access your full dashboard at:</p>
+            <div class="code-block">
+                <a href="https://lyzr-chat-agent.vercel.app" target="_blank" style="color: #60a5fa;">
+                    https://lyzr-chat-agent.vercel.app
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Widget Integration -->
+    <script 
+      src="{{DEMO_WIDGET_URL}}"
+      data-agent-id="{{DEMO_AGENT_ID}}"
+      data-title="Demo Support"
+      data-welcome-message="👋 Welcome to Lyzr Support! This is a demo widget. How can I help you today?"
+      data-placeholder="Type your message..."
+      data-theme="light"
+      data-primary-color="#3b82f6"
+      data-position="bottom-right"
+    ></script>
+</body>
+</html>
