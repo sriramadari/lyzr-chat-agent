@@ -22,8 +22,27 @@ export interface IAgent extends Document {
   analytics: {
     totalChats: number;
     totalMessages: number;
+    pageViews: number;
     lastUsed?: Date;
+    lastSeen?: Date;
   };
+  optimization?: {
+    enableAutoLearning?: boolean;
+    confidenceThreshold?: number;
+    responseTimeTarget?: number;
+    categories?: string[];
+    keywords?: string[];
+    fallbackMessage?: string;
+  };
+  trainingData?: Array<{
+    question: string;
+    answer: string;
+    category?: string;
+    tags?: string[];
+    uploadedAt: Date;
+    uploadedBy: mongoose.Types.ObjectId;
+  }>;
+  lastTrainingUpdate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -119,6 +138,68 @@ const agentSchema = new Schema<IAgent>({
     lastSeen: {
       type: Date
     }
+  },
+  optimization: {
+    enableAutoLearning: {
+      type: Boolean,
+      default: false
+    },
+    confidenceThreshold: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0.8
+    },
+    responseTimeTarget: {
+      type: Number,
+      min: 1,
+      default: 30
+    },
+    categories: [{
+      type: String,
+      maxlength: 100
+    }],
+    keywords: [{
+      type: String,
+      maxlength: 50
+    }],
+    fallbackMessage: {
+      type: String,
+      maxlength: 200,
+      default: 'I\'m not sure about that. Let me connect you with a human agent.'
+    }
+  },
+  trainingData: [{
+    question: {
+      type: String,
+      required: true,
+      maxlength: 500
+    },
+    answer: {
+      type: String,
+      required: true,
+      maxlength: 2000
+    },
+    category: {
+      type: String,
+      maxlength: 100
+    },
+    tags: [{
+      type: String,
+      maxlength: 50
+    }],
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    },
+    uploadedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
+  }],
+  lastTrainingUpdate: {
+    type: Date
   }
 }, {
   timestamps: true

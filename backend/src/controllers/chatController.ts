@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Agent from '../models/Agent';
+import Ticket from '../models/Ticket';
 import lyzrService, { LyzrService } from '../services/lyzr';
 import { z } from 'zod';
 
@@ -54,6 +55,59 @@ export const sendMessage = async (req: Request, res: Response) => {
       finalSessionId,
       agent.lyzrConfig.agentId
     );
+
+    // Find or create ticket for this session
+    let ticket = await Ticket.findOne({ sessionId: finalSessionId });
+    
+    if (!ticket) {
+      // Create new ticket for this conversation
+      const customerInfo: any = {};
+      
+      // Try to extract customer info from message or headers
+      if (req.body.customerInfo) {
+        customerInfo.name = req.body.customerInfo.name;
+        customerInfo.email = req.body.customerInfo.email;
+        customerInfo.phone = req.body.customerInfo.phone;
+      }
+
+      ticket = await Ticket.create({
+        title: message.length > 50 ? message.substring(0, 50) + '...' : message,
+        description: message,
+        category: 'General Support',
+        agentId: agent._id,
+        sessionId: finalSessionId,
+        customerInfo,
+        messages: [{
+          content: message,
+          sender: 'user',
+          timestamp: new Date()
+        }, {
+          content: lyzrResponse.response,
+          sender: 'agent',
+          timestamp: new Date()
+        }]
+      });
+    } else {
+      // Add messages to existing ticket
+      await Ticket.findByIdAndUpdate(ticket._id, {
+        $push: {
+          messages: {
+            $each: [{
+              content: message,
+              sender: 'user',
+              timestamp: new Date()
+            }, {
+              content: lyzrResponse.response,
+              sender: 'agent',
+              timestamp: new Date()
+            }]
+          }
+        },
+        $inc: {
+          'analytics.interactions': 1
+        }
+      });
+    }
 
     // Update agent analytics
     await Agent.findByIdAndUpdate(agentId, {

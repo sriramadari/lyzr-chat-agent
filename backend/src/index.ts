@@ -9,6 +9,8 @@ import authRoutes from './routes/auth';
 import agentRoutes from './routes/agents';
 import chatRoutes from './routes/chat';
 import widgetRoutes from './routes/widget';
+import ticketRoutes from './routes/tickets';
+import userRoutes from './routes/users';
 
 dotenv.config();
 
@@ -47,6 +49,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/widget', widgetRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/users', userRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {
