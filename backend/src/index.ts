@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import agentRoutes from './routes/agents';
 import chatRoutes from './routes/chat';
+import widgetRoutes from './routes/widget';
 
 dotenv.config();
 
@@ -15,10 +16,19 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false // Disable CSP completely for widget embedding
+}));
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: '*', // Allow all origins for widget embedding
+  credentials: false, // Don't include credentials for public widget
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
+  exposedHeaders: ['Content-Type'],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,6 +46,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/widget', widgetRoutes);
 
 // Connect to MongoDB and start server
 const startServer = async () => {

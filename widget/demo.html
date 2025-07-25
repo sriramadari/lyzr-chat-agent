@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Real Lyzr Agent</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .test-info {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .agent-id {
+            background: #1a1a1a;
+            color: #00ff88;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .status {
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 10px;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        
+        .instructions {
+            text-align: left;
+            margin: 20px 0;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Testing Your Real Agent</h1>
+        
+        <div class="test-info">
+            <h2>📡 Connection Status</h2>
+            <div id="backend-status" class="status">Checking backend...</div>
+            <div id="widget-status" class="status">Checking widget...</div>
+            <div id="agent-status" class="status">Checking agent...</div>
+        </div>
+        
+        <div class="test-info">
+            <h2>🎯 Your Agent Details</h2>
+            <p><strong>Agent ID:</strong></p>
+            <div class="agent-id">6883ce332e0f4ddf412f86f8</div>
+        </div>
+        
+        <div class="test-info">
+            <h2>📝 Test Instructions</h2>
+            <div class="instructions">
+                <div class="step">
+                    <strong>Step 1:</strong> Look for the chat bubble in the bottom-right corner
+                </div>
+                <div class="step">
+                    <strong>Step 2:</strong> Click the chat bubble to open the chat window
+                </div>
+                <div class="step">
+                    <strong>Step 3:</strong> Type a message and press Enter
+                </div>
+                <div class="step">
+                    <strong>Step 4:</strong> You should get a response from your Lyzr AI agent!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your actual widget embed code -->
+    <script 
+      src="http://localhost:5001/api/widget/6883ce332e0f4ddf412f86f8/widget.js"
+      data-agent-id="6883ce332e0f4ddf412f86f8"
+      data-title="Chat Support"
+      data-welcome-message="Hi! How can I help you today?"
+      data-placeholder="Type your message..."
+      data-theme="dark"
+      data-primary-color="#3b82f6"
+      data-position="bottom-right"
+    ></script>
+
+    <script>
+        // Status checking
+        async function checkBackend() {
+            try {
+                const response = await fetch('http://localhost:5001/health');
+                const data = await response.json();
+                document.getElementById('backend-status').innerHTML = '✅ Backend Connected';
+                document.getElementById('backend-status').className = 'status success';
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = '❌ Backend Offline - Start your backend server';
+                document.getElementById('backend-status').className = 'status error';
+            }
+        }
+        
+        async function checkAgent() {
+            try {
+                // Test if the agent exists by trying to send a test message
+                const response = await fetch('http://localhost:5001/api/chat/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'test',
+                        agentId: '6883ce332e0f4ddf412f86f8'
+                    })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('agent-status').innerHTML = '✅ Agent Found & Working';
+                    document.getElementById('agent-status').className = 'status success';
+                } else {
+                    document.getElementById('agent-status').innerHTML = '❌ Agent Not Found or Inactive';
+                    document.getElementById('agent-status').className = 'status error';
+                }
+            } catch (error) {
+                document.getElementById('agent-status').innerHTML = '❌ Cannot Connect to Agent';
+                document.getElementById('agent-status').className = 'status error';
+            }
+        }
+        
+        function checkWidget() {
+            if (window.LyzrWidget) {
+                document.getElementById('widget-status').innerHTML = '✅ Widget Loaded Successfully';
+                document.getElementById('widget-status').className = 'status success';
+            } else {
+                document.getElementById('widget-status').innerHTML = '❌ Widget Failed to Load';
+                document.getElementById('widget-status').className = 'status error';
+            }
+        }
+        
+        // Initialize checks
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackend();
+            setTimeout(() => {
+                checkWidget();
+                checkAgent();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

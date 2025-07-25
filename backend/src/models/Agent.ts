@@ -109,7 +109,14 @@ const agentSchema = new Schema<IAgent>({
       type: Number,
       default: 0
     },
+    pageViews: {
+      type: Number,
+      default: 0
+    },
     lastUsed: {
+      type: Date
+    },
+    lastSeen: {
       type: Date
     }
   }

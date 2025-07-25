@@ -1,13 +1,16 @@
 {
-  "name": "widget",
+  "name": "lyzr-support-widget",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Embeddable chat widget for Lyzr Support",
+  "main": "dist/widget.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node build.js",
+    "dev": "node build.js --watch",
+    "test": "node -e \"console.log('Widget build test')\"",
+    "serve": "node -e \"require('http').createServer((req,res)=>{require('fs').createReadStream('./demo.html').pipe(res)}).listen(8080, ()=>console.log('http://localhost:8080'))\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["chat", "widget", "lyzr", "support"],
+  "author": "Lyzr Support",
+  "license": "MIT",
   "type": "commonjs"
 }
