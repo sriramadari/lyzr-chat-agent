@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { agentAPI } from '@/lib/api';
 import { useAgentStore } from '@/stores/agentStore';
 import { 
   Settings, 
-  TrendingUp, 
   Brain, 
   Upload, 
-  Download, 
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -37,7 +35,10 @@ interface OptimizationData {
     name: string;
     description: string;
     isActive: boolean;
-    analytics: any;
+    analytics: {
+      totalChats: number;
+      totalMessages: number;
+    };
   };
   performance: {
     totalTickets: number;
@@ -69,28 +70,24 @@ interface OptimizationData {
   };
 }
 
+interface Recommendation {
+  type: string;
+  priority: 'low' | 'medium' | 'high';
+  title: string;
+  description: string;
+  action: string;
+}
+
 export default function OptimizationPage() {
   const { agents } = useAgentStore();
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [optimizationData, setOptimizationData] = useState<OptimizationData | null>(null);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trainingData, setTrainingData] = useState<string>('');
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  useEffect(() => {
-    if (agents.length > 0 && !selectedAgent) {
-      setSelectedAgent(agents[0]);
-    }
-  }, [agents, selectedAgent]);
-
-  useEffect(() => {
-    if (selectedAgent) {
-      fetchOptimizationData();
-    }
-  }, [selectedAgent]);
-
-  const fetchOptimizationData = async () => {
+  const fetchOptimizationData = useCallback(async () => {
     if (!selectedAgent) return;
     
     try {
@@ -108,7 +105,19 @@ export default function OptimizationPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedAgent]);
+
+  useEffect(() => {
+    if (agents.length > 0 && !selectedAgent) {
+      setSelectedAgent(agents[0]);
+    }
+  }, [agents, selectedAgent]);
+
+  useEffect(() => {
+    if (selectedAgent) {
+      fetchOptimizationData();
+    }
+  }, [selectedAgent, fetchOptimizationData]);
 
   const handleUploadTrainingData = async () => {
     if (!selectedAgent || !trainingData.trim()) {
@@ -297,7 +306,7 @@ export default function OptimizationPage() {
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {recommendations.map((recommendation: any, index: number) => (
+                {recommendations.map((recommendation, index) => (
                   <div key={index} className="p-6">
                     <div className="flex items-start">
                       <div className={`flex-shrink-0 p-2 rounded-lg border ${getPriorityColor(recommendation.priority)}`}>

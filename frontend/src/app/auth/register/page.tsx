@@ -43,8 +43,13 @@ export default function RegisterPage() {
       
       toast.success('Account created successfully!');
       router.push('/dashboard');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+    } catch (error: unknown) {
+      let errorMessage = 'Registration failed';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        errorMessage = response?.data?.message || 'Registration failed';
+      }
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

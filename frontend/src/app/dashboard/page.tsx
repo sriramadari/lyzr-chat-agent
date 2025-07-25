@@ -1,53 +1,67 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAgentStore } from '@/stores/agentStore';
-import { useAuthStore } from '@/stores/authStore';
 import { api } from '@/lib/api';
 import CreateAgentModal from '@/components/CreateAgentModal';
 import WidgetCodeModal from '@/components/WidgetCodeModal';
 import { 
   Plus, 
   Bot, 
-  Settings, 
   BarChart3, 
   Code2, 
   Trash2, 
   Edit,
   MessageSquare,
-  Users,
-  Calendar,
-  ExternalLink
+  Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+interface Agent {
+  _id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  analytics: {
+    totalChats: number;
+    totalMessages: number;
+  };
+  widget: {
+    theme: 'light' | 'dark';
+    primaryColor: string;
+    position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+    welcomeMessage: string;
+    placeholder: string;
+    title: string;
+  };
+}
+
 export default function DashboardPage() {
   const { agents, setAgents, setLoading, isLoading } = useAgentStore();
-  const { user } = useAuthStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showWidgetModal, setShowWidgetModal] = useState(false);
-  const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    fetchAgents();
-  }, []);
-
-  const fetchAgents = async () => {
+  const fetchAgents = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/agents');
-      setAgents(response.data.data.agents || []);
-      setIsInitialized(true);
+      if (response.data.success) {
+        setAgents(response.data.data);
+      }
     } catch (error) {
       console.error('Error fetching agents:', error);
       toast.error('Failed to fetch agents');
-      setAgents([]); // Set empty array on error
-      setIsInitialized(true);
     } finally {
       setLoading(false);
+      setIsInitialized(true);
     }
-  };
+  }, [setLoading, setAgents]);
+
+  useEffect(() => {
+    fetchAgents();
+  }, [fetchAgents]);
 
   const deleteAgent = async (agentId: string) => {
     if (!confirm('Are you sure you want to delete this agent?')) return;
