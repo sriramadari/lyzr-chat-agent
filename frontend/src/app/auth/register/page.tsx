@@ -14,7 +14,6 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  company: z.string().optional(),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -103,18 +102,6 @@ export default function RegisterPage() {
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
-            </div>
-
-            <div>
-              <label htmlFor="company" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Company (Optional)
-              </label>
-              <input
-                {...register('company')}
-                type="text"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Acme Inc."
-              />
             </div>
 
             <div>
