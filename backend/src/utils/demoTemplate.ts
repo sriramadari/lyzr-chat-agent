@@ -33,23 +33,59 @@ export function getDemoHTML(protocol: string, host: string): string {
       throw new Error('Template not found');
     }
     
+    // Force HTTPS in production, detect protocol properly
+    let backendUrl = process.env.BACKEND_URL;
+    
+    if (!backendUrl) {
+      // Auto-detect protocol - force HTTPS for .onrender.com domains
+      const detectedProtocol = host.includes('.onrender.com') || host.includes('vercel.app') ? 'https' : protocol;
+      backendUrl = `${detectedProtocol}://${host}`;
+    }
+    
+    // Ensure backend URL uses HTTPS
+    if (backendUrl.startsWith('http://') && (host.includes('.onrender.com') || process.env.NODE_ENV === 'production')) {
+      backendUrl = backendUrl.replace('http://', 'https://');
+    }
+    
     // Get demo agent ID from environment variable
-    const agenetId = process.env.LYZR_AGENT_ID || 'demo-agent';
+    const demoAgentId = process.env.DEMO_AGENT_ID || '6883fec523d48350b2f43f80';
     
-    // Replace placeholders with actual URLs
-    const widgetUrl = `${protocol}://${host}/api/widget/${agenetId}/widget.js`;
-    const demoWidgetUrl = `${protocol}://${host}/api/widget/${agenetId}/widget.js`;
+    // Replace placeholders with actual URLs and values
+    const widgetUrl = `${backendUrl}/api/widget/YOUR_AGENT_ID/widget.js`;
+    const demoWidgetUrl = `${backendUrl}/api/widget/${demoAgentId}/widget.js`;
     
-    return htmlTemplate
-      .replace('{{WIDGET_URL}}', widgetUrl)
-      .replace('{{DEMO_WIDGET_URL}}', demoWidgetUrl);
+    console.log(`🔗 Demo template replacements:`, { 
+      backendUrl, 
+      demoAgentId, 
+      widgetUrl, 
+      demoWidgetUrl 
+    });
+    
+    // Replace ALL placeholders in the template
+    const processedTemplate = htmlTemplate
+      .replace(/\{\{WIDGET_URL\}\}/g, widgetUrl)
+      .replace(/\{\{DEMO_WIDGET_URL\}\}/g, demoWidgetUrl)
+      .replace(/\{\{DEMO_AGENT_ID\}\}/g, demoAgentId);
+    
+    return processedTemplate;
+    
   } catch (error) {
     console.error('Error reading demo HTML template:', error);
     
-    // Get demo agent ID from environment variable for fallback too
-    const demoAgentId = process.env.LYZR_AGENT_ID || 'demo-agent';
+    // Enhanced fallback with proper HTTPS detection
+    let backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl) {
+      const detectedProtocol = host.includes('.onrender.com') || host.includes('vercel.app') ? 'https' : protocol;
+      backendUrl = `${detectedProtocol}://${host}`;
+    }
     
-    // Enhanced fallback HTML
+    // Ensure HTTPS in production
+    if (backendUrl.startsWith('http://') && (host.includes('.onrender.com') || process.env.NODE_ENV === 'production')) {
+      backendUrl = backendUrl.replace('http://', 'https://');
+    }
+    
+    const demoAgentId = process.env.DEMO_AGENT_ID || '6883fec523d48350b2f43f80';
+    
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -93,13 +129,15 @@ export function getDemoHTML(protocol: string, host: string): string {
         <h1 class="title">🚀 Lyzr Support Widget Demo</h1>
         <div class="fallback">
             <h2>Demo Page (Fallback Mode)</h2>
-            <p>Widget script URL: <code>${protocol}://${host}/api/widget/${demoAgentId}/widget.js</code></p>
+            <p>Backend URL: <code>${backendUrl}</code></p>
+            <p>Agent ID: <code>${demoAgentId}</code></p>
+            <p>Widget script URL: <code>${backendUrl}/api/widget/${demoAgentId}/widget.js</code></p>
             <p>Visit our dashboard: <a href="https://lyzr-chat-agent.vercel.app" target="_blank">Lyzr Chat Agent</a></p>
         </div>
     </div>
     
     <script 
-      src="${protocol}://${host}/api/widget/${demoAgentId}/widget.js"
+      src="${backendUrl}/api/widget/${demoAgentId}/widget.js"
       data-agent-id="${demoAgentId}"
       data-title="Demo Support"
       data-welcome-message="👋 Welcome to Lyzr Support! This is a demo widget."
