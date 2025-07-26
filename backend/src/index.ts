@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -40,6 +40,7 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 200
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -48,14 +49,14 @@ app.use('/static', express.static(path.join(process.cwd(), 'public')));
 app.use('/widget', express.static(path.join(process.cwd(), 'widget')));
 
 // Demo page route
-app.get('/demo.html', (req, res) => {
+app.get('/demo.html', (req: Request, res: Response) => {
   const demoHTML = getDemoHTML(req.protocol, req.get('host') || 'localhost:8080');
   res.setHeader('Content-Type', 'text/html');
   res.send(demoHTML);
 });
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),

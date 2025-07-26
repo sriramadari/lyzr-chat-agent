@@ -1,16 +1,29 @@
-# This file tells Render which commands to run during deployment
-# Place this file in your backend directory
+#!/bin/bash
 
-# Install dependencies
-npm install
+echo "🔨 Starting Render build process..."
 
-# Build the TypeScript code
+# Install dependencies including dev dependencies for TypeScript compilation
+echo "📦 Installing dependencies..."
+npm ci
+
+# Install TypeScript types
+echo "🔧 Installing TypeScript definitions..."
+npm install --save-dev @types/express @types/cors @types/bcryptjs @types/jsonwebtoken @types/node
+
+# Build TypeScript
+echo "🏗️ Building TypeScript..."
 npm run build
 
-# Copy static files to dist directory for production
-mkdir -p dist/public dist/widget dist/templates
-cp -r ../widget/* dist/widget/ 2>/dev/null || echo "Widget directory not found, skipping..."
-cp -r ../public/* dist/public/ 2>/dev/null || echo "Public directory not found, skipping..."
-cp -r src/templates/* dist/templates/ 2>/dev/null || echo "Templates directory not found, skipping..."
+# Copy additional files
+echo "📁 Copying additional files..."
+if [ -d "../widget" ]; then
+  cp -r ../widget dist/
+  echo "✅ Widget files copied"
+fi
 
-echo "Build completed successfully!"
+if [ -d "src/templates" ]; then
+  cp -r src/templates dist/
+  echo "✅ Template files copied"
+fi
+
+echo "✅ Build completed successfully!"
