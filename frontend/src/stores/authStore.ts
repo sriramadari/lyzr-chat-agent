@@ -5,7 +5,6 @@ interface User {
   id: string;
   email: string;
   name: string;
-  company?: string;
   role: 'admin' | 'user';
   subscription: {
     plan: 'free' | 'pro' | 'enterprise';
