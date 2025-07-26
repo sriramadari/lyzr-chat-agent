@@ -51,7 +51,8 @@ export default function HomePage() {
               Start Free Trial
             </Link>
             <Link
-              href="https://lyzr-chat-agent.onrender.com/demo.html"
+              href={`${process.env.NEXT_BACKEND_URL}/demo.html`}
+              target='_blank'
               className="border border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-8 py-3 rounded-lg text-lg font-medium"
             >
               View Demo
